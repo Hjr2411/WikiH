@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RdCod_H Wiki — Pesquisa</title>
+<link rel="stylesheet" href="estilo.css">
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCpb0-b_Rq-aQzk6LAdIir_WSc-OLM4byY",
+  authDomain: "appchath-f9d90.firebaseapp.com",
+  databaseURL: "https://appchath-f9d90-default-rtdb.firebaseio.com",
+  projectId: "appchath-f9d90",
+  storageBucket: "appchath-f9d90.appspot.com",
+  messagingSenderId: "431216579611",
+  appId: "1:431216579611:web:054613cef17d08680154be"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const dbRef = ref(db);
+
+let usuarioLogado = "";
+
+window.login = async function() {
+  const user = document.getElementById('usuario').value.trim();
+  const senha = document.getElementById('senha').value.trim();
+
+  const snap = await get(child(dbRef, 'usuarios/' + user));
+  if (snap.exists() && snap.val().senha === senha) {
+    usuarioLogado = user;
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('conteudo').style.display = 'block';
+    carregarCodigos();
+  } else {
+    alert("Usuário ou senha inválidos.");
+  }
+}
+
+window.logout = function() {
+  usuarioLogado = "";
+  document.getElementById('conteudo').style.display = 'none';
+  document.getElementById('loginSection').style.display = 'flex';
+}
+
+window.pesquisar = function() {
+  const termo = document.getElementById('busca').value.toLowerCase();
+  const linguagem = document.getElementById('filtroLinguagem').value;
+  document.querySelectorAll('.code-card').forEach(c => {
+    const texto = c.innerText.toLowerCase();
+    const lang = c.getAttribute('data-linguagem');
+    const visivel = texto.includes(termo) && (linguagem === '' || linguagem === lang);
+    c.style.display = visivel ? "block" : "none";
+  });
+}
+
+function carregarCodigos() {
+  const lista = document.getElementById('listaCodigos');
+  lista.innerHTML = "";
+  get(child(dbRef, 'codigos')).then(snapshot => {
+    if (snapshot.exists()) {
+      const dados = snapshot.val();
+      let linguagensSet = new Set();
+      for (let id in dados) {
+        const item = dados[id];
+        linguagensSet.add(item.linguagem);
+
+        const div = document.createElement('div');
+        div.className = 'code-card';
+        div.setAttribute('data-linguagem', item.linguagem);
+        div.innerHTML = `
+          <div class="code-header">${item.titulo}</div>
+          <div class="code-meta">${item.linguagem} | ${item.usuario} | ${item.datahora}</div>
+          <div class="code-descricao">${item.descricao || ''}</div>`;
+        div.onclick = () => mostrarModal(item);
+        lista.appendChild(div);
+      }
+
+      const filtro = document.getElementById('filtroLinguagem');
+      filtro.innerHTML = `<option value="">Todas</option>`;
+      linguagensSet.forEach(l => {
+        filtro.innerHTML += `<option value="${l}">${l}</option>`;
+      });
+    }
+  });
+}
+
+window.mostrarModal = function(item) {
+  const modal = document.getElementById('modal');
+  const conteudo = document.getElementById('modalContent');
+  conteudo.innerHTML = `
+    <h2>${item.titulo}</h2>
+    <p><strong>Linguagem:</strong> ${item.linguagem}</p>
+    <p><strong>Usuário:</strong> ${item.usuario}</p>
+    <p><strong>Data:</strong> ${item.datahora}</p>
+    <p><strong>Descrição:</strong> ${item.descricao || ''}</p>
+    <pre>${item.codigo.replace(/&lt;/g,'<').replace(/&gt;/g,'>')}</pre>`;
+  modal.style.display = 'block';
+}
+
+window.fecharModal = function() {
+  document.getElementById('modal').style.display = 'none';
+}
+</script>
+</head>
+<body>
+<header>
+  <div class="title">📚 RdCod_H Wiki — Pesquisa</div>
+  <div class="login-container" id="loginSection">
+    <input type="text" id="usuario" placeholder="Usuário">
+    <input type="password" id="senha" placeholder="Senha">
+    <button onclick="login()">Entrar</button>
+  </div>
+  <div class="logout-container" style="display:none" id="conteudo">
+    <button onclick="logout()">Sair</button>
+  </div>
+</header>
+
+<main>
+<div id="conteudo" style="display:none">
+  <div class="search-container">
+    <input type="text" id="busca" placeholder="🔍 Buscar por título, descrição, código..." oninput="pesquisar()">
+    <select id="filtroLinguagem" onchange="pesquisar()">
+      <option value="">Todas</option>
+    </select>
+  </div>
+
+  <div id="listaCodigos"></div>
+</div>
+</main>
+
+<div id="modal" class="modal" style="display:none" onclick="fecharModal()">
+  <div class="modal-content" id="modalContent"></div>
+</div>
+</body>
+</html>
