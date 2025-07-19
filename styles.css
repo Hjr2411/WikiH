@@ -4,6 +4,7 @@ body {
   font-family: Arial, sans-serif;
   margin: 0;
 }
+
 header {
   background: #202123;
   padding: 10px;
@@ -12,15 +13,18 @@ header {
   align-items: center;
   flex-wrap: wrap;
 }
+
 .title {
   font-size: 1.5rem;
   font-weight: bold;
 }
+
 .login-container {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
+
 .login-container input {
   background: #40414f;
   color: white;
@@ -28,6 +32,7 @@ header {
   padding: 6px 10px;
   border-radius: 6px;
 }
+
 .login-container button {
   background: #0fa47f;
   color: white;
@@ -36,25 +41,47 @@ header {
   border-radius: 6px;
   cursor: pointer;
 }
+
 main {
   padding: 15px;
 }
-h2 {
-  margin-top: 0;
+
+.counter {
+  text-align: center;
+  margin-bottom: 10px;
+  font-weight: bold;
 }
+
+.code-card {
+  background: #40414f;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 15px;
+}
+
+.code-header {
+  font-weight: bold;
+  margin-bottom: 5px;
+  font-size: 1.1rem;
+}
+
+.code-meta {
+  font-size: 0.9em;
+  color: #ccc;
+  margin-bottom: 8px;
+}
+
 .code-content {
-  background: #1e1e1e;
+  background: #343541;
   padding: 10px;
   border-radius: 6px;
   white-space: pre-wrap;
   word-break: break-word;
-  font-family: monospace;
-  overflow-x: auto;
 }
-.titulo-link {
-  cursor: pointer;
-  color: #0fa47f;
-  text-decoration: underline;
-  margin-bottom: 5px;
-  display: block;
+
+@media (max-width: 600px) {
+  .login-container {
+    width: 100%;
+    justify-content: flex-end;
+  }
 }
