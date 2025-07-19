@@ -1,0 +1,34 @@
+body {
+  background: #343541; color: #ececec; font-family: Arial; margin: 0;
+}
+header {
+  background: #202123; padding: 10px; display: flex; justify-content: space-between; flex-wrap: wrap;
+}
+.title {
+  font-size: 1.5rem; font-weight: bold;
+}
+.login-container {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.login-container input {
+  background: #40414f; color: white; border: none; padding: 6px 10px; border-radius: 6px;
+}
+.login-container button {
+  background: #0fa47f; color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer;
+}
+main {
+  padding: 15px;
+}
+.code-card {
+  background: #40414f; border-radius: 8px; padding: 10px; margin-bottom: 15px;
+}
+.code-header {
+  font-weight: bold; font-size: 1.1rem;
+}
+.code-meta {
+  font-size: 0.9em; color: #ccc; margin-bottom: 8px;
+}
+.code-content {
+  background: #343541; padding: 10px; border-radius: 6px; white-space: pre-wrap; word-break: break-word;
+}
+
