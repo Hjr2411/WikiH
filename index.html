@@ -3,16 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RdCod_H v1.4.2</title>
-<link rel="stylesheet" href="styles.css">
+<title>RdCod_H v1.4.4</title>
+<link rel="stylesheet" href="estilos.css">
 <script type="module" src="app.js" defer></script>
 </head>
 <body>
 
 <header>
-  <div class="title">RdCod_H v1.4.2</div>
+  <div class="title">RdCod_H v1.4.4</div>
   <div class="login-container">
-    <!-- Campos com name corretos para que navegador sugira salvar a senha -->
     <input type="text" id="usuario" name="username" placeholder="Usuário">
     <input type="password" id="senha" name="password" placeholder="Senha">
     <button onclick="login()">Entrar</button>
@@ -21,9 +20,13 @@
 </header>
 
 <main>
-  <div class="counter" id="contadorCodigos">Total de Códigos: 0</div>
+  <aside id="listaTitulos">
+    <!-- Lista de títulos será carregada aqui -->
+  </aside>
 
-  <div id="listaCodigos"></div>
+  <section id="conteudoCodigo" class="code-content">
+    <p>Selecione um título na lateral para ver o conteúdo.</p>
+  </section>
 </main>
 
 </body>
