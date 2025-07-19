@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, push, set, remove, get, child } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
+// Configurações do Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCpb0-b_Rq-aQzk6LAdIir_WSc-OLM4byY",
   authDomain: "appchath-f9d90.firebaseapp.com",
@@ -18,61 +19,73 @@ const dbRef = ref(db);
 let usuarioLogado = "";
 let tipoUsuario = "";
 
-document.getElementById('loginBtn').addEventListener('click', login);
-document.getElementById('logoutBtn').addEventListener('click', logout);
+// Ao carregar a página, verifica se já existe sessão salva
+window.onload = function () {
+  const user = localStorage.getItem('usuarioLogado');
+  const tipo = localStorage.getItem('tipoUsuario');
+  if (user && tipo) {
+    usuarioLogado = user;
+    tipoUsuario = tipo;
+    carregarCodigos();
+  }
+};
 
-function login() {
+// Login
+window.login = async function () {
   const user = document.getElementById('usuario').value.trim();
   const senha = document.getElementById('senha').value.trim();
 
-  get(child(dbRef, 'usuarios/' + user)).then(snap => {
-    if (snap.exists() && snap.val().senha === senha) {
-      usuarioLogado = user;
-      tipoUsuario = snap.val().tipo;
-      alert(`Logado como ${tipoUsuario}`);
-      carregarTitulos();
-    } else {
-      alert("Usuário ou senha inválidos.");
-    }
-  });
-}
+  const snap = await get(child(dbRef, 'usuarios/' + user));
+  if (snap.exists() && snap.val().senha === senha) {
+    usuarioLogado = user;
+    tipoUsuario = snap.val().tipo;
 
-function logout() {
+    // Salva a sessão no navegador
+    localStorage.setItem('usuarioLogado', usuarioLogado);
+    localStorage.setItem('tipoUsuario', tipoUsuario);
+
+    alert(`Logado como ${tipoUsuario}`);
+    carregarCodigos();
+  } else {
+    alert("Usuário ou senha inválidos.");
+  }
+};
+
+// Logout
+window.logout = function () {
   usuarioLogado = "";
   tipoUsuario = "";
-  document.getElementById('conteudo').innerHTML = "<p>Faça login para ver os códigos.</p>";
-}
+  localStorage.removeItem('usuarioLogado');
+  localStorage.removeItem('tipoUsuario');
+  document.getElementById('listaCodigos').innerHTML = "";
+  document.getElementById('contadorCodigos').innerText = "Total de Códigos: 0";
+  alert("Você saiu.");
+};
 
-function carregarTitulos() {
-  const container = document.getElementById('conteudo');
-  container.innerHTML = "<h2>Lista de Códigos</h2>";
-
-  get(child(dbRef, 'codigos')).then(snap => {
-    if (snap.exists()) {
-      const dados = snap.val();
+// Carrega os códigos do banco e exibe
+function carregarCodigos() {
+  const lista = document.getElementById('listaCodigos');
+  lista.innerHTML = "";
+  get(child(dbRef, 'codigos')).then(snapshot => {
+    if (snapshot.exists()) {
+      const dados = snapshot.val();
+      let total = 0;
       for (let id in dados) {
+        total++;
         const item = dados[id];
-        const link = document.createElement('span');
-        link.className = 'titulo-link';
-        link.textContent = item.titulo;
-        link.onclick = () => mostrarCodigo(item);
-        container.appendChild(link);
+
+        const div = document.createElement('div');
+        div.className = 'code-card';
+
+        div.innerHTML = `
+          <div class="code-header">${item.titulo}</div>
+          <div class="code-meta">${item.linguagem} | ${item.descricao || ''}<br>${item.usuario} | ${item.datahora}</div>
+          <div class="code-content">${item.codigo}</div>`;
+        lista.appendChild(div);
       }
+      document.getElementById('contadorCodigos').innerText = `Total de Códigos: ${total}`;
     } else {
-      container.innerHTML += "<p>Nenhum código encontrado.</p>";
+      document.getElementById('contadorCodigos').innerText = `Total de Códigos: 0`;
     }
   });
-}
-
-function mostrarCodigo(item) {
-  const container = document.getElementById('conteudo');
-  container.innerHTML = `
-    <h2>${item.titulo}</h2>
-    <p><strong>Linguagem:</strong> ${item.linguagem}</p>
-    <p><strong>Descrição:</strong> ${item.descricao || '(sem descrição)'}</p>
-    <p><strong>Autor:</strong> ${item.usuario}</p>
-    <p><strong>Data:</strong> ${item.datahora}</p>
-    <div class="code-content">${item.codigo.replace(/&lt;/g, '<').replace(/&gt;/g, '>')}</div>
-    <button onclick="window.location.reload()">⬅ Voltar à lista</button>
-  `;
 }
