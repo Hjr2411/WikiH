@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RdCod_H v1.4.4</title>
+<link rel="stylesheet" href="styles.css">
+<script type="module" src="app.js" defer></script>
+</head>
+<body>
+
+<header>
+  <div class="title">RdCod_H v1.4.4</div>
+  <div class="login-container">
+    <input type="text" id="usuario" name="username" placeholder="Usuário">
+    <input type="password" id="senha" name="password" placeholder="Senha">
+    <button onclick="login()">Entrar</button>
+    <button onclick="logout()">Sair</button>
+    <button id="btnAdmin" class="admin-toggle" onclick="toggleAdmin()" style="display: none;">Admin</button>
+  </div>
+</header>
+
+<main>
+  <div class="counter" id="contadorCodigos">Total de Códigos: 0</div>
+  <aside id="listaTitulos">
+    <div id="listaCodigos">
+      <!-- Lista de títulos será carregada aqui -->
+    </div>
+  </aside>
+
+  <section id="conteudoCodigo" class="code-content">
+    <p>Selecione um título na lateral para ver o conteúdo.</p>
+  </section>
+
+  <!-- Painel de Administração -->
+  <div id="painelAdmin" class="admin-panel" style="display: none;">
+    <button class="close-admin" onclick="toggleAdmin()">✕ Fechar</button>
+    <h3>Painel de Administração</h3>
+    
+    <div class="admin-section">
+      <h4>Gerenciar Usuários</h4>
+      <form id="formNovoUsuario">
+        <input type="text" id="novoUsuarioNome" placeholder="Nome do Usuário" required>
+        <input type="password" id="novoUsuarioSenha" placeholder="Senha" required>
+        <select id="novoUsuarioTipo" required>
+          <option value="">Selecione o tipo</option>
+          <option value="admin">Administrador</option>
+          <option value="user">Usuário</option>
+        </select>
+        <button type="submit">Adicionar Usuário</button>
+      </form>
+      
+      <div id="listaUsuariosAdmin">
+        <!-- Lista de usuários para administração -->
+      </div>
+    </div>
+
+    <div class="admin-section">
+      <h4>Adicionar Novo Código</h4>
+      <form id="formNovoCodigo">
+        <input type="text" id="novoTitulo" placeholder="Título" required>
+        <input type="text" id="novaLinguagem" placeholder="Linguagem" required>
+        <input type="text" id="novaDescricao" placeholder="Descrição">
+        <textarea id="novoCodigo" placeholder="Código" rows="10" required></textarea>
+        <button type="submit">Adicionar Código</button>
+      </form>
+    </div>
+
+    <div class="admin-section">
+      <h4>Gerenciar Códigos Existentes</h4>
+      <div id="listaCodigosAdmin">
+        <!-- Lista de códigos para administração -->
+      </div>
+    </div>
+  </div>
+</main>
+
+</body>
+</html>
