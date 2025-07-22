@@ -500,4 +500,33 @@ main {
   background: #21262d;
   color: #e6edf3;
 }
+#toggleMenuBtn {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 999;
+  background: #58a6ff;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
 
+#toggleMenuBtn:hover {
+  background: #4493f8;
+}
+
+.hidden {
+  display: none !important;
+}
+
+#pesquisa {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  background: #21262d;
+  color: #e6edf3;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+}
