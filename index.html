@@ -1,85 +1,45 @@
-<!DOCTYPE html><html lang="pt-br">
+<!DOCTYPE html>
+<html lang="pt-br">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RdCod_H v1.5.0 - Sistema de Códigos</title>
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
-<style>
-:root {
-  --wikipedia-blue: #0645ad;
-  --wikipedia-gray: #a2a9b1;
-  --wikipedia-light-gray: #f8f9fa;
-  --wikipedia-border: #c8ccd1;
-}
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  line-height: 1.6;
-}
-.wiki-header {background: var(--wikipedia-light-gray);border-bottom: 1px solid var(--wikipedia-border);}
-.wiki-sidebar {background: var(--wikipedia-light-gray);border-right: 1px solid var(--wikipedia-border);transition: margin-left 0.3s ease;}
-.wiki-sidebar.collapsed {margin-left: -280px;}
-.wiki-main {background: white;transition: margin-left 0.3s ease;}
-.wiki-main.expanded {margin-left: 0;}
-.wiki-link {color: var(--wikipedia-blue);text-decoration: none;}
-.wiki-link:hover {text-decoration: underline;}
-.code-item {border: 1px solid var(--wikipedia-border);border-radius: 4px;background: white;transition: all 0.2s ease;}
-.code-item:hover {box-shadow: 0 2px 4px rgba(0,0,0,0.1);border-color: var(--wikipedia-blue);}
-.search-highlight {background-color: #ffeb3b;padding: 1px 2px;border-radius: 2px;}
-.login-overlay {background: rgba(0,0,0,0.8);backdrop-filter: blur(4px);}
-.login-card {background: white;border: 1px solid var(--wikipedia-border);box-shadow: 0 4px 12px rgba(0,0,0,0.15);}
-@media (max-width: 768px) {.wiki-sidebar {position: fixed;z-index: 1000;height: 100vh;top: 0;left: 0;margin-left: -280px;}
-.wiki-sidebar.mobile-open {margin-left: 0;}
-.wiki-main {margin-left: 0 !important;}}
-</style>
+<title>RdCod_H v1.5.2</title>
+<link rel="stylesheet" href="estilos.css">
+<script type="module" src="app.js" defer></script>
 </head>
-<body class="bg-gray-50"><!-- Login --><div id="loginOverlay" class="fixed inset-0 login-overlay flex items-center justify-center z-50">
-<div class="login-card rounded-lg p-8 max-w-md w-full mx-4">
-<div class="text-center mb-6">
-<h1 class="text-2xl font-bold text-gray-800 mb-2">RdCod_H v1.5.0</h1>
-<p class="text-gray-600">Sistema de Gerenciamento de Códigos</p>
-</div>
-<form id="loginForm" class="space-y-4">
-<div>
-<label class="block text-sm font-medium text-gray-700 mb-1">Usuário</label>
-<input type="text" id="usuario" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-</div>
-<div>
-<label class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
-<input type="password" id="senha" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-</div>
-<button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">
-<i class="fas fa-sign-in-alt mr-2"></i>Entrar</button>
-</form>
-</div></div><header class="wiki-header sticky top-0 z-40">
-<div class="flex items-center justify-between px-4 py-3">
-<div class="flex items-center space-x-3">
-<button id="sidebarToggle" class="p-2 rounded-md hover:bg-gray-200 md:hidden">
-<i class="fas fa-bars"></i></button>
-<h1 class="text-xl font-bold text-gray-800">RdCod_H v1.5.0</h1></div>
-<div class="flex items-center space-x-3">
-<span id="userInfo" class="text-sm text-gray-600 hidden"></span>
-<button id="btnAdmin" class="px-3 py-1 bg-orange-500 text-white rounded-md text-sm hover:bg-orange-600 hidden"><i class="fas fa-cog mr-1"></i>Admin</button>
-<button id="logoutBtn" class="px-3 py-1 bg-red-500 text-white rounded-md text-sm hover:bg-red-600">
-<i class="fas fa-sign-out-alt mr-1"></i>Sair</button></div></div></header><div class="flex">
-<aside id="sidebar" class="wiki-sidebar w-72 h-screen overflow-y-auto">
-<div class="p-4 space-y-4">
-<div class="relative">
-<input type="text" id="searchInput" placeholder="Buscar códigos..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
-<i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i></div>
-<div class="bg-blue-50 border border-blue-200 rounded-md p-3">
-<div class="flex items-center justify-between">
-<span class="text-sm font-medium text-blue-800">Total de Códigos</span>
-<span id="contadorCodigos" class="bg-blue-600 text-white px-2 py-1 rounded-full text-xs font-bold">0</span></div></div>
-<div id="listaCodigos" class="space-y-2"></div>
-</div></aside><main id="mainContent" class="wiki-main flex-1 min-h-screen">
-<div class="p-6">
-<div id="welcomeScreen" class="text-center py-12">
-<div class="max-w-2xl mx-auto">
-<i class="fas fa-code text-6xl text-blue-500 mb-6"></i>
-<h2 class="text-3xl font-bold text-gray-800 mb-4">Bem-vindo ao RdCod_H</h2>
-<p class="text-gray-600 mb-6">Sistema de gerenciamento de códigos com design inspirado no Wikipedia.</p></div></div>
-<div id="conteudoCodigo" class="hidden">
-<div class="bg-white rounded-lg border border-gray-200 shadow-sm">
-<div class="border-b border-gray-200 p-4">
-<h2 id="codigoTitulo" class="text-
+<body>
+
+<header>
+  <div class="title">RdCod_H v1.5.2</div>
+  <div class="login-container">
+    <input type="text" id="usuario" name="username" placeholder="Usuário">
+    <input type="password" id="senha" name="password" placeholder="Senha">
+    <button onclick="login()">Entrar</button>
+    <button onclick="logout()">Sair</button>
+  </div>
+</header>
+
+<main>
+  <aside id="listaTitulos">
+    <!-- Lista de títulos -->
+  </aside>
+
+  <section id="conteudoCodigo" class="code-content">
+    <p>Selecione um título para ver o conteúdo.</p>
+  </section>
+
+  <section id="adminPanel" class="admin-panel hidden">
+    <h3>Admin: Gerenciar Usuários</h3>
+    <input type="text" id="newUser" placeholder="Novo usuário">
+    <input type="password" id="newPass" placeholder="Senha">
+    <select id="newTipo">
+      <option value="user">User</option>
+      <option value="admin">Admin</option>
+    </select>
+    <button onclick="cadastrarUsuario()">Cadastrar Usuário</button>
+    <div id="listaUsuarios"></div>
+  </section>
+</main>
+
+</body>
+</html>
