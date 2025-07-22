@@ -320,20 +320,28 @@
     </div>
 
     <script>
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBw8X9f1Y2Z3A4b5C6d7E8F9G0H1I2J3K4",
-            authDomain: "rdcod-h.firebaseapp.com",
-            databaseURL: "https://rdcod-h-default-rtdb.firebaseio.com/",
-            projectId: "rdcod-h",
-            storageBucket: "rdcod-h.appspot.com",
-            messagingSenderId: "123456789012",
-            appId: "1:123456789012:web:abcdef123456789012"
-        };
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+
+// Configurações do Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyCpb0-b_Rq-aQzk6LAdIir_WSc-OLM4byY",
+  authDomain: "appchath-f9d90.firebaseapp.com",
+  databaseURL: "https://appchath-f9d90-default-rtdb.firebaseio.com",
+  projectId: "appchath-f9d90",
+  storageBucket: "appchath-f9d90.appspot.com",
+  messagingSenderId: "431216579611",
+  appId: "1:431216579611:web:054613cef17d08680154be"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const dbRef = ref(db);
+
+let usuarioLogado = "";
+let tipoUsuario = "";
+
+        
+        
 
         // Application State
         const state = {
