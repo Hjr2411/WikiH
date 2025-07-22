@@ -17,7 +17,7 @@ const dbRef = ref(db);
 
 let usuarioLogado = "";
 let tipoUsuario = "";
-let codigosCarregados = []; // armazena os códigos
+let codigosCarregados = [];
 
 window.onload = function () {
   const user = localStorage.getItem("usuarioLogado");
@@ -34,13 +34,18 @@ window.onload = function () {
 };
 
 function mostrarConteudo() {
-  document.getElementById("conteudoCodigo").innerHTML = "<p>Selecione um título na lateral para ver o conteúdo.</p>";
+  document.getElementById("conteudoCodigo").innerHTML =
+    "<p>Selecione um título na lateral para ver o conteúdo.</p>";
   document.getElementById("listaTitulos").classList.remove("hidden");
+  document.getElementById("toggleMenuBtn").style.display = "block";
 }
 
 function ocultarConteudo() {
   document.getElementById("listaTitulos").classList.add("hidden");
-  document.getElementById("conteudoCodigo").innerHTML = "<p>Faça login para acessar o conteúdo.</p>";
+  document.getElementById("conteudoCodigo").innerHTML =
+    "<p>Faça login para acessar o conteúdo.</p>";
+  document.getElementById("toggleMenuBtn").style.display = "none";
+  document.getElementById("listaCodigos").innerHTML = "";
 }
 
 window.login = async function () {
@@ -68,7 +73,6 @@ window.logout = function () {
   usuarioLogado = "";
   tipoUsuario = "";
   localStorage.clear();
-  document.getElementById("listaCodigos").innerHTML = "";
   ocultarConteudo();
   alert("Você saiu.");
 };
@@ -125,4 +129,26 @@ window.filtrarCodigos = function () {
     (item.codigo || '').toLowerCase().includes(termo)
   );
   renderizarCodigos(filtrados);
+};
+
+function mostrarBotaoAdmin() {
+  const btnAdmin = document.getElementById('btnAdmin');
+  if (tipoUsuario === 'admin') {
+    btnAdmin.style.display = 'inline-block';
+  } else {
+    btnAdmin.style.display = 'none';
+  }
+}
+
+window.toggleAdmin = function () {
+  const painelAdmin = document.getElementById('painelAdmin');
+  if (painelAdmin.style.display === 'none') {
+    if (tipoUsuario === 'admin') {
+      painelAdmin.style.display = 'block';
+    } else {
+      alert('Acesso negado.');
+    }
+  } else {
+    painelAdmin.style.display = 'none';
+  }
 };
