@@ -1,74 +1,819 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WikiH</title>
-<link rel="stylesheet" href="styles.css">
-<script type="module" src="app.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RdCod_H v1.5.1 - Sistema Firebase</title>
+    
+    <!-- Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/firebase@9.23.0/compat/app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/firebase@9.23.0/compat/database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/firebase@9.23.0/compat/auth.js"></script>
+
+    <style>
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .sidebar {
+            transition: transform 0.3s ease-in-out;
+            border-right: 1px solid #e5e7eb;
+            background: white;
+        }
+        
+        .sidebar.closed {
+            transform: translateX(-100%);
+        }
+        
+        .main-content {
+            transition: margin-left 0.3s ease-in-out;
+        }
+        
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+        
+        .search-results {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .code-item:hover {
+            background-color: #f3f4f6;
+            cursor: pointer;
+        }
+        
+        .admin-panel {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                z-index: 1000;
+                height: 100vh;
+            }
+            
+            .main-content {
+                margin-left: 0 !important;
+            }
+        }
+        
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .login-modal {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .wikipedia-style {
+            line-height: 1.6;
+            color: #202122;
+        }
+        
+        .wikipedia-style h1, .wikipedia-style h2, .wikipedia-style h3 {
+            border-bottom: 1px solid #a2a9b1;
+            padding-bottom: 0.25em;
+            margin-bottom: 0.5em;
+            color: #000;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
-
-<header>
-  <div class="title">WikiH</div>
-  <div class="login-container">
-    <input type="text" id="usuario" name="username" placeholder="Usuário">
-    <input type="password" id="senha" name="password" placeholder="Senha">
-    <button onclick="login()">Entrar</button>
-    <button onclick="logout()">Sair</button>
-    <button id="btnAdmin" class="admin-toggle" onclick="toggleAdmin()" style="display: none;">Admin</button>
-  </div>
-</header>
-
-<main>
-  <aside id="listaTitulos" class="hidden">
-    <input type="text" id="pesquisa" placeholder="Pesquisar..." oninput="filtrarCodigos()">
-    <div id="listaCodigos">
-      <!-- Lista de títulos será carregada aqui -->
-    </div>
-  </aside>
-
-  <section id="conteudoCodigo" class="code-content">
-    <p>Faça login para acessar o conteúdo.</p>
-  </section>
-
-  <button id="toggleMenuBtn" onclick="toggleMenu()">☰ Menu</button>
-
-  <div id="painelAdmin" class="admin-panel" style="display: none;">
-    <button class="close-admin" onclick="toggleAdmin()">✕ Fechar</button>
-    <h3>Painel de Administração</h3>
-    <div class="admin-section">
-      <h4>Gerenciar Usuários</h4>
-      <form id="formNovoUsuario">
-        <input type="text" id="novoUsuarioNome" placeholder="Nome do Usuário" required>
-        <input type="password" id="novoUsuarioSenha" placeholder="Senha" required>
-        <select id="novoUsuarioTipo" required>
-          <option value="">Selecione o tipo</option>
-          <option value="admin">Administrador</option>
-          <option value="user">Usuário</option>
-        </select>
-        <button type="submit">Adicionar Usuário</button>
-      </form>
-      <div id="listaUsuariosAdmin"></div>
+    <!-- Login Overlay -->
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-modal">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">RdCod_H v1.5.1</h2>
+                <p class="text-gray-600 mt-2">Sistema de Códigos Integrado</p>
+            </div>
+            
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Usuário</label>
+                    <input type="text" id="username" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="Digite seu usuário" required>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+                    <input type="password" id="password"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="Digite sua senha" required>
+                </div>
+                
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors">
+                    <span id="loginButtonText">Entrar</span>
+                    <span id="loginLoading" class="loading hidden ml-2"></span>
+                </button>
+            </form>
+            
+            <div id="loginError" class="hidden mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md text-sm"></div>
+        </div>
     </div>
 
-    <div class="admin-section">
-      <h4>Adicionar Novo Código</h4>
-      <form id="formNovoCodigo">
-        <input type="text" id="novoTitulo" placeholder="Título" required>
-        <input type="text" id="novaLinguagem" placeholder="Linguagem" required>
-        <input type="text" id="novaDescricao" placeholder="Descrição">
-        <textarea id="novoCodigo" placeholder="Código" rows="10" required></textarea>
-        <button type="submit">Adicionar Código</button>
-      </form>
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="flex items-center justify-between px-4 py-3">
+            <div class="flex items-center space-x-4">
+                <button id="sidebarToggle" class="text-gray-600 hover:text-gray-800 transition-colors">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-code text-blue-600"></i>
+                    <h1 class="text-xl font-semibold text-gray-800">RdCod_H v1.5.1</h1>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <input type="text" id="searchInput" 
+                           placeholder="Buscar códigos..." 
+                           class="pl-10 pr-4 py-2 w-80 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                    <div id="searchResults" class="absolute top-full left-0 w-full search-results hidden mt-1 z-50"></div>
+                </div>
+                
+                <span id="userInfo" class="text-sm text-gray-600"></span>
+                
+                <button id="adminButton" class="hidden bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-md text-sm font-medium transition-colors">
+                    <i class="fas fa-cog mr-1"></i> Admin
+                </button>
+                
+                <button id="logoutButton" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-sm font-medium transition-colors">
+                    <i class="fas fa-sign-out-alt mr-1"></i> Sair
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar w-80 bg-white h-screen overflow-y-auto">
+            <!-- Admin Panel -->
+            <div id="adminPanel" class="admin-panel p-4 m-4 hidden">
+                <h3 class="text-lg font-semibold mb-3">
+                    <i class="fas fa-shield-alt mr-2"></i>
+                    Painel Administrativo
+                </h3>
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="addCodeBtn" class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded text-sm transition-colors">
+                        <i class="fas fa-plus mr-1"></i> Adicionar
+                    </button>
+                    <button id="editCodeBtn" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded text-sm transition-colors">
+                        <i class="fas fa-edit mr-1"></i> Editar
+                    </button>
+                    <button id="deleteCodeBtn" class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded text-sm transition-colors">
+                        <i class="fas fa-trash mr-1"></i> Excluir
+                    </button>
+                    <button id="refreshBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded text-sm transition-colors">
+                        <i class="fas fa-sync mr-1"></i> Atualizar
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Counter -->
+            <div class="px-4 py-2 bg-gray-50 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium text-gray-700">Total de Códigos:</span>
+                    <span id="codeCounter" class="text-sm font-bold text-blue-600">0</span>
+                </div>
+            </div>
+            
+            <!-- Code List -->
+            <div id="codeList" class="p-2">
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                    <p>Carregando códigos...</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main id="mainContent" class="main-content flex-1 bg-white ml-80">
+            <div class="p-6">
+                <!-- Welcome Screen -->
+                <div id="welcomeScreen" class="text-center py-16">
+                    <div class="max-w-2xl mx-auto">
+                        <i class="fas fa-code text-6xl text-blue-600 mb-6"></i>
+                        <h2 class="text-3xl font-bold text-gray-800 mb-4">Bem-vindo ao RdCod_H</h2>
+                        <p class="text-gray-600 mb-6">Sistema de gerenciamento de códigos integrado com Firebase</p>
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
+                            <h3 class="font-semibold text-blue-800 mb-2">Como usar:</h3>
+                            <ul class="text-sm text-blue-700 space-y-1">
+                                <li>• Selecione um código na barra lateral para visualizar</li>
+                                <li>• Use a barra de pesquisa para encontrar códigos específicos</li>
+                                <li>• Administradores podem gerenciar códigos através do painel admin</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content Display -->
+                <div id="contentDisplay" class="hidden">
+                    <div class="max-w-4xl mx-auto">
+                        <div id="breadcrumb" class="text-sm text-gray-500 mb-4"></div>
+                        
+                        <article class="wikipedia-style">
+                            <header class="mb-6">
+                                <h1 id="contentTitle" class="text-3xl font-bold text-gray-900 mb-2"></h1>
+                                <div class="flex items-center text-sm text-gray-500 space-x-4">
+                                    <span id="contentDate"></span>
+                                    <span id="contentId"></span>
+                                </div>
+                            </header>
+                            
+                            <div id="contentBody" class="prose max-w-none">
+                                <!-- Content will be loaded here -->
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <div class="admin-section">
-      <h4>Gerenciar Códigos Existentes</h4>
-      <div id="listaCodigosAdmin"></div>
+    <!-- Admin Modal -->
+    <div id="adminModal" class="fixed inset-0 bg-black bg-opacity-50 z-[3000] hidden flex items-center justify-center">
+        <div class="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="modalTitle" class="text-xl font-semibold text-gray-800"></h3>
+                <button id="closeModal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="codeForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Título</label>
+                    <input type="text" id="codeTitle" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Conteúdo</label>
+                    <textarea id="codeContent" rows="12" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm" required></textarea>
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancelBtn" class="px-4 py-2 text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors">Cancelar</button>
+                    <button type="submit" id="saveBtn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors">Salvar</button>
+                </div>
+            </form>
+        </div>
     </div>
-  </div>
-</main>
 
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBw8X9f1Y2Z3A4b5C6d7E8F9G0H1I2J3K4",
+            authDomain: "rdcod-h.firebaseapp.com",
+            databaseURL: "https://rdcod-h-default-rtdb.firebaseio.com/",
+            projectId: "rdcod-h",
+            storageBucket: "rdcod-h.appspot.com",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:abcdef123456789012"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Application State
+        const state = {
+            currentUser: null,
+            isAdmin: false,
+            codes: {},
+            filteredCodes: {},
+            selectedCodeId: null,
+            sidebarOpen: true
+        };
+
+        // DOM Elements
+        const elements = {
+            loginOverlay: document.getElementById('loginOverlay'),
+            loginForm: document.getElementById('loginForm'),
+            loginError: document.getElementById('loginError'),
+            loginLoading: document.getElementById('loginLoading'),
+            loginButtonText: document.getElementById('loginButtonText'),
+            
+            sidebar: document.getElementById('sidebar'),
+            sidebarToggle: document.getElementById('sidebarToggle'),
+            mainContent: document.getElementById('mainContent'),
+            
+            searchInput: document.getElementById('searchInput'),
+            searchResults: document.getElementById('searchResults'),
+            
+            userInfo: document.getElementById('userInfo'),
+            adminButton: document.getElementById('adminButton'),
+            logoutButton: document.getElementById('logoutButton'),
+            adminPanel: document.getElementById('adminPanel'),
+            
+            codeList: document.getElementById('codeList'),
+            codeCounter: document.getElementById('codeCounter'),
+            
+            welcomeScreen: document.getElementById('welcomeScreen'),
+            contentDisplay: document.getElementById('contentDisplay'),
+            contentTitle: document.getElementById('contentTitle'),
+            contentBody: document.getElementById('contentBody'),
+            contentDate: document.getElementById('contentDate'),
+            contentId: document.getElementById('contentId'),
+            breadcrumb: document.getElementById('breadcrumb'),
+            
+            adminModal: document.getElementById('adminModal'),
+            modalTitle: document.getElementById('modalTitle'),
+            codeForm: document.getElementById('codeForm'),
+            codeTitle: document.getElementById('codeTitle'),
+            codeContent: document.getElementById('codeContent'),
+            
+            addCodeBtn: document.getElementById('addCodeBtn'),
+            editCodeBtn: document.getElementById('editCodeBtn'),
+            deleteCodeBtn: document.getElementById('deleteCodeBtn'),
+            refreshBtn: document.getElementById('refreshBtn'),
+            closeModal: document.getElementById('closeModal'),
+            cancelBtn: document.getElementById('cancelBtn'),
+            saveBtn: document.getElementById('saveBtn')
+        };
+
+        // Authentication System
+        class AuthSystem {
+            constructor() {
+                this.users = {
+                    'admin': { password: 'admin123', isAdmin: true },
+                    'user': { password: 'user123', isAdmin: false }
+                };
+            }
+
+            async login(username, password) {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        const user = this.users[username];
+                        if (user && user.password === password) {
+                            state.currentUser = username;
+                            state.isAdmin = user.isAdmin;
+                            resolve({ success: true, user: username, isAdmin: user.isAdmin });
+                        } else {
+                            resolve({ success: false, error: 'Credenciais inválidas' });
+                        }
+                    }, 1000);
+                });
+            }
+
+            logout() {
+                state.currentUser = null;
+                state.isAdmin = false;
+                this.showLoginScreen();
+            }
+
+            showLoginScreen() {
+                elements.loginOverlay.classList.remove('hidden');
+                elements.loginError.classList.add('hidden');
+            }
+
+            hideLoginScreen() {
+                elements.loginOverlay.classList.add('hidden');
+            }
+        }
+
+        // Firebase Database Manager
+        class DatabaseManager {
+            constructor() {
+                this.codesRef = database.ref('codes');
+            }
+
+            async loadCodes() {
+                return new Promise((resolve, reject) => {
+                    this.codesRef.on('value', (snapshot) => {
+                        const data = snapshot.val() || {};
+                        state.codes = data;
+                        state.filteredCodes = data;
+                        resolve(data);
+                    }, (error) => {
+                        reject(error);
+                    });
+                });
+            }
+
+            async saveCode(id, codeData) {
+                const data = {
+                    ...codeData,
+                    id: id,
+                    createdAt: codeData.createdAt || Date.now(),
+                    updatedAt: Date.now()
+                };
+                return this.codesRef.child(id).set(data);
+            }
+
+            async deleteCode(id) {
+                return this.codesRef.child(id).remove();
+            }
+
+            generateId() {
+                return 'code_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            }
+        }
+
+        // UI Manager
+        class UIManager {
+            constructor() {
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                // Login
+                elements.loginForm.addEventListener('submit', this.handleLogin.bind(this));
+                
+                // Logout
+                elements.logoutButton.addEventListener('click', () => authSystem.logout());
+                
+                // Sidebar
+                elements.sidebarToggle.addEventListener('click', this.toggleSidebar.bind(this));
+                
+                // Search
+                elements.searchInput.addEventListener('input', this.handleSearch.bind(this));
+                elements.searchInput.addEventListener('focus', this.showSearchResults.bind(this));
+                document.addEventListener('click', this.hideSearchResults.bind(this));
+                
+                // Admin
+                elements.adminButton.addEventListener('click', this.toggleAdminPanel.bind(this));
+                elements.addCodeBtn.addEventListener('click', () => this.showCodeModal('add'));
+                elements.editCodeBtn.addEventListener('click', () => this.showCodeModal('edit'));
+                elements.deleteCodeBtn.addEventListener('click', this.deleteCurrentCode.bind(this));
+                elements.refreshBtn.addEventListener('click', () => dbManager.loadCodes());
+                
+                // Modal
+                elements.closeModal.addEventListener('click', this.hideModal.bind(this));
+                elements.cancelBtn.addEventListener('click', this.hideModal.bind(this));
+                elements.codeForm.addEventListener('submit', this.handleSaveCode.bind(this));
+                
+                // Responsive
+                window.addEventListener('resize', this.handleResize.bind(this));
+            }
+
+            async handleLogin(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                elements.loginLoading.classList.remove('hidden');
+                elements.loginButtonText.textContent = 'Entrando...';
+                
+                try {
+                    const result = await authSystem.login(username, password);
+                    
+                    if (result.success) {
+                        elements.userInfo.textContent = `Usuário: ${result.user}`;
+                        
+                        if (result.isAdmin) {
+                            elements.adminButton.classList.remove('hidden');
+                        }
+                        
+                        authSystem.hideLoginScreen();
+                        await this.loadAndDisplayCodes();
+                    } else {
+                        elements.loginError.textContent = result.error;
+                        elements.loginError.classList.remove('hidden');
+                    }
+                } catch (error) {
+                    elements.loginError.textContent = 'Erro no servidor';
+                    elements.loginError.classList.remove('hidden');
+                } finally {
+                    elements.loginLoading.classList.add('hidden');
+                    elements.loginButtonText.textContent = 'Entrar';
+                }
+            }
+
+            async loadAndDisplayCodes() {
+                try {
+                    await dbManager.loadCodes();
+                    this.renderCodeList();
+                    this.updateCounter();
+                } catch (error) {
+                    console.error('Erro ao carregar códigos:', error);
+                    elements.codeList.innerHTML = `
+                        <div class="text-center py-8 text-red-500">
+                            <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+                            <p>Erro ao carregar códigos</p>
+                        </div>
+                    `;
+                }
+            }
+
+            renderCodeList(codes = state.filteredCodes) {
+                const codeKeys = Object.keys(codes);
+                
+                if (codeKeys.length === 0) {
+                    elements.codeList.innerHTML = `
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fas fa-folder-open text-2xl mb-2"></i>
+                            <p>Nenhum código encontrado</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                elements.codeList.innerHTML = codeKeys.map(id => {
+                    const code = codes[id];
+                    const isSelected = id === state.selectedCodeId;
+                    
+                    return `
+                        <div class="code-item p-3 border-b border-gray-100 cursor-pointer transition-colors ${isSelected ? 'bg-blue-50 border-l-4 border-l-blue-500' : 'hover:bg-gray-50'}"
+                             onclick="uiManager.selectCode('${id}')">
+                            <h4 class="font-medium text-gray-800 mb-1">${this.escapeHtml(code.title || 'Sem título')}</h4>
+                            <p class="text-xs text-gray-500">
+                                <i class="fas fa-calendar mr-1"></i>
+                                ${new Date(code.createdAt || Date.now()).toLocaleDateString('pt-BR')}
+                            </p>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            selectCode(id) {
+                state.selectedCodeId = id;
+                const code = state.codes[id];
+                
+                if (code) {
+                    elements.welcomeScreen.classList.add('hidden');
+                    elements.contentDisplay.classList.remove('hidden');
+                    
+                    elements.contentTitle.textContent = code.title || 'Sem título';
+                    elements.contentBody.innerHTML = `
+                        <div class="code-block p-4">
+                            <pre class="whitespace-pre-wrap text-sm">${this.escapeHtml(code.content || 'Sem conteúdo')}</pre>
+                        </div>
+                    `;
+                    
+                    elements.contentDate.innerHTML = `
+                        <i class="fas fa-calendar mr-1"></i>
+                        Criado em: ${new Date(code.createdAt || Date.now()).toLocaleString('pt-BR')}
+                    `;
+                    
+                    elements.contentId.innerHTML = `
+                        <i class="fas fa-tag mr-1"></i>
+                        ID: ${id}
+                    `;
+                    
+                    elements.breadcrumb.innerHTML = `
+                        <a href="#" onclick="uiManager.showWelcome()" class="text-blue-600 hover:underline">Início</a>
+                        <span class="mx-2">/</span>
+                        <span class="text-gray-500">${this.escapeHtml(code.title || 'Sem título')}</span>
+                    `;
+                    
+                    this.renderCodeList(); // Re-render to update selection
+                }
+            }
+
+            showWelcome() {
+                state.selectedCodeId = null;
+                elements.contentDisplay.classList.add('hidden');
+                elements.welcomeScreen.classList.remove('hidden');
+                this.renderCodeList();
+            }
+
+            updateCounter() {
+                elements.codeCounter.textContent = Object.keys(state.codes).length;
+            }
+
+            handleSearch(e) {
+                const query = e.target.value.toLowerCase().trim();
+                
+                if (query === '') {
+                    state.filteredCodes = state.codes;
+                    elements.searchResults.classList.add('hidden');
+                } else {
+                    state.filteredCodes = {};
+                    Object.keys(state.codes).forEach(id => {
+                        const code = state.codes[id];
+                        if (code.title && code.title.toLowerCase().includes(query)) {
+                            state.filteredCodes[id] = code;
+                        }
+                    });
+                    this.showSearchResults();
+                }
+                
+                this.renderCodeList();
+            }
+
+            showSearchResults() {
+                const query = elements.searchInput.value.toLowerCase().trim();
+                if (query === '') return;
+
+                const results = Object.keys(state.filteredCodes).slice(0, 5);
+                
+                if (results.length === 0) {
+                    elements.searchResults.innerHTML = `
+                        <div class="p-3 text-gray-500 text-sm">
+                            <i class="fas fa-search mr-2"></i>
+                            Nenhum resultado encontrado
+                        </div>
+                    `;
+                } else {
+                    elements.searchResults.innerHTML = results.map(id => {
+                        const code = state.codes[id];
+                        return `
+                            <div class="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                 onclick="uiManager.selectCodeFromSearch('${id}')">
+                                <h4 class="font-medium text-gray-800">${this.escapeHtml(code.title || 'Sem título')}</h4>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    ${new Date(code.createdAt || Date.now()).toLocaleDateString('pt-BR')}
+                                </p>
+                            </div>
+                        `;
+                    }).join('');
+                }
+                
+                elements.searchResults.classList.remove('hidden');
+            }
+
+            selectCodeFromSearch(id) {
+                elements.searchResults.classList.add('hidden');
+                elements.searchInput.value = '';
+                state.filteredCodes = state.codes;
+                this.selectCode(id);
+                this.renderCodeList();
+            }
+
+            hideSearchResults(e) {
+                if (!elements.searchInput.contains(e.target) && !elements.searchResults.contains(e.target)) {
+                    elements.searchResults.classList.add('hidden');
+                }
+            }
+
+            toggleSidebar() {
+                state.sidebarOpen = !state.sidebarOpen;
+                
+                if (window.innerWidth <= 768) {
+                    elements.sidebar.classList.toggle('closed', !state.sidebarOpen);
+                } else {
+                    elements.sidebar.classList.toggle('closed', !state.sidebarOpen);
+                    elements.mainContent.style.marginLeft = state.sidebarOpen ? '320px' : '0';
+                }
+            }
+
+            toggleAdminPanel() {
+                elements.adminPanel.classList.toggle('hidden');
+            }
+
+            showCodeModal(mode, codeId = null) {
+                if (!state.isAdmin) return;
+
+                elements.modalTitle.textContent = mode === 'add' ? 'Adicionar Código' : 'Editar Código';
+                
+                if (mode === 'edit' && codeId) {
+                    const code = state.codes[codeId];
+                    elements.codeTitle.value = code.title || '';
+                    elements.codeContent.value = code.content || '';
+                } else if (mode === 'edit' && state.selectedCodeId) {
+                    const code = state.codes[state.selectedCodeId];
+                    elements.codeTitle.value = code.title || '';
+                    elements.codeContent.value = code.content || '';
+                } else {
+                    elements.codeTitle.value = '';
+                    elements.codeContent.value = '';
+                }
+                
+                elements.adminModal.classList.remove('hidden');
+            }
+
+            hideModal() {
+                elements.adminModal.classList.add('hidden');
+                elements.codeForm.reset();
+            }
+
+            async handleSaveCode(e) {
+                e.preventDefault();
+                
+                if (!state.isAdmin) return;
+
+                const title = elements.codeTitle.value.trim();
+                const content = elements.codeContent.value.trim();
+                
+                if (!title || !content) {
+                    alert('Título e conteúdo são obrigatórios');
+                    return;
+                }
+
+                try {
+                    const isEditing = state.selectedCodeId && state.codes[state.selectedCodeId];
+                    const id = isEditing ? state.selectedCodeId : dbManager.generateId();
+                    
+                    const codeData = {
+                        title,
+                        content,
+                        createdAt: isEditing ? state.codes[state.selectedCodeId].createdAt : Date.now()
+                    };
+
+                    await dbManager.saveCode(id, codeData);
+                    
+                    this.hideModal();
+                    
+                    // Auto-select the new/edited code
+                    state.selectedCodeId = id;
+                    setTimeout(() => this.selectCode(id), 500);
+                    
+                } catch (error) {
+                    console.error('Erro ao salvar código:', error);
+                    alert('Erro ao salvar código');
+                }
+            }
+
+            async deleteCurrentCode() {
+                if (!state.isAdmin || !state.selectedCodeId) return;
+
+                const code = state.codes[state.selectedCodeId];
+                if (!confirm(`Confirma a exclusão do código "${code.title}"?`)) return;
+
+                try {
+                    await dbManager.deleteCode(state.selectedCodeId);
+                    this.showWelcome();
+                } catch (error) {
+                    console.error('Erro ao excluir código:', error);
+                    alert('Erro ao excluir código');
+                }
+            }
+
+            handleResize() {
+                if (window.innerWidth <= 768) {
+                    elements.mainContent.style.marginLeft = '0';
+                } else if (state.sidebarOpen) {
+                    elements.mainContent.style.marginLeft = '320px';
+                }
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+
+        // Initialize Application
+        const authSystem = new AuthSystem();
+        const dbManager = new DatabaseManager();
+        const uiManager = new UIManager();
+
+        // Start Application
+        document.addEventListener('DOMContentLoaded', () => {
+            authSystem.showLoginScreen();
+        });
+    </script>
 </body>
 </html>
