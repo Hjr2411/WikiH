@@ -22,9 +22,7 @@
 
 <main>
   <aside id="listaTitulos" class="hidden">
-    <div>
-      <input type="text" id="pesquisa" placeholder="Pesquisar..." oninput="filtrarCodigos()">
-    </div>
+    <input type="text" id="pesquisa" placeholder="Pesquisar..." oninput="filtrarCodigos()">
     <div id="listaCodigos">
       <!-- Lista de títulos será carregada aqui -->
     </div>
@@ -36,11 +34,9 @@
 
   <button id="toggleMenuBtn" onclick="toggleMenu()">☰ Menu</button>
 
-  <!-- Painel de Administração -->
   <div id="painelAdmin" class="admin-panel" style="display: none;">
     <button class="close-admin" onclick="toggleAdmin()">✕ Fechar</button>
     <h3>Painel de Administração</h3>
-    
     <div class="admin-section">
       <h4>Gerenciar Usuários</h4>
       <form id="formNovoUsuario">
@@ -53,7 +49,6 @@
         </select>
         <button type="submit">Adicionar Usuário</button>
       </form>
-      
       <div id="listaUsuariosAdmin"></div>
     </div>
 
